@@ -38,9 +38,25 @@ const save = async user => {
   }
 };
 
-const update = async (id, user) =>
-  User.findOneAndUpdate({ _id: id }, { $set: user }, { new: true });
+const update = async (id, user) => {
+  const oldUser = await User.findOne({ _id: id });
+  const deletepath = path.join(__dirname, '../../../', oldUser.avatar);
+  const updatedUser = await User.findOneAndUpdate(
+    { _id: id },
+    { $set: user },
+    { new: true }
+  );
+  fs.unlinkSync(deletepath);
 
-const remove = async id => User.deleteOne({ _id: id });
+  return updatedUser;
+};
+
+const remove = async id => {
+  const user = await User.findOne({ _id: id });
+  const deletepath = path.join(__dirname, '../../../', user.avatar);
+  console.log(deletepath);
+  await User.deleteOne({ _id: id });
+  fs.unlinkSync(deletepath);
+};
 
 module.exports = { get, getUserByEmail, save, update, remove };

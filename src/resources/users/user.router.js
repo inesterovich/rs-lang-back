@@ -19,7 +19,24 @@ const storage = multer.diskStorage({
     cb(null, Date.now() + file.originalname);
   }
 });
-const upload = multer({ storage });
+const fileFilter = (req, file, cb) => {
+  if (
+    file.mimetype === 'image/png' ||
+    file.mimetype === 'image/jpg' ||
+    file.mimetype === 'image/jpeg'
+  ) {
+    // eslint-disable-next-line callback-return
+    cb(null, true);
+  } else {
+    // eslint-disable-next-line callback-return
+    cb(null, false);
+  }
+};
+
+const upload = multer({
+  storage,
+  fileFilter
+});
 
 const userService = require('./user.service');
 const { id, user } = require('../../utils/validation/schemas');
@@ -28,7 +45,6 @@ const {
   userIdValidator
 } = require('../../utils/validation/validator');
 
-/* Вот сюда вставляю multer, настраиваю его валидацию. Возможно, мне потребуется middleware для переделки файла в строку */
 router.post(
   '/',
   upload.single('avatar'),
@@ -52,6 +68,8 @@ router.get(
 
 router.put(
   '/:id',
+  upload.single('avatar'),
+  stringFyAvatar,
   userIdValidator,
   validator(id, 'params'),
   validator(user, 'body'),
