@@ -1,5 +1,25 @@
+/* eslint-disable no-sync */
 const { OK, NO_CONTENT } = require('http-status-codes');
 const router = require('express').Router();
+const fs = require('fs');
+const stringFyAvatar = require('./stringfyAvatar.middleware');
+
+const multer = require('multer');
+const storage = multer.diskStorage({
+  destination(req, file, cb) {
+    const avatars = 'avatars';
+
+    if (!fs.existsSync(avatars)) {
+      fs.mkdirSync(avatars);
+    }
+
+    cb(null, './avatars/');
+  },
+  filename(req, file, cb) {
+    cb(null, Date.now() + file.originalname);
+  }
+});
+const upload = multer({ storage });
 
 const userService = require('./user.service');
 const { id, user } = require('../../utils/validation/schemas');
@@ -8,10 +28,17 @@ const {
   userIdValidator
 } = require('../../utils/validation/validator');
 
-router.post('/', validator(user, 'body'), async (req, res) => {
-  const userEntity = await userService.save(req.body);
-  res.status(OK).send(userEntity.toResponse());
-});
+/* Вот сюда вставляю multer, настраиваю его валидацию. Возможно, мне потребуется middleware для переделки файла в строку */
+router.post(
+  '/',
+  upload.single('avatar'),
+  stringFyAvatar,
+  validator(user, 'body'),
+  async (req, res) => {
+    const userEntity = await userService.save(req.body);
+    res.status(OK).send(userEntity.toResponse());
+  }
+);
 
 router.get(
   '/:id',
