@@ -76,6 +76,8 @@ components:
           type: string
         password:
           type: string
+        avatar: 
+          type: string
     Auth:
       type: object
       properties:
@@ -167,7 +169,7 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               type: object
               title: example
@@ -181,6 +183,9 @@ paths:
                 password:
                   type: string
                   description: Password
+                avatar:
+                  type: file
+                  description: All image formats, exept gif. Must be validated on client
       responses:
         200:
           description: Successful creation.
@@ -222,17 +227,22 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               type: object
               title: example
               properties:
+                name:
+                  type: string
                 email:
                   type: string
                   description: E-mail
                 password:
                   type: string
                   description: Password
+                avatar: 
+                  type: file
+                  description: new User avatar
       responses:
         200:
           description: The user has been updated.
